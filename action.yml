@@ -20,4 +20,4 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.configPath }} --config ${{ inputs.packagerPath }}
+    - -- ${{ inputs.configPath }} --config ${{ inputs.packagerPath }}
