@@ -1,6 +1,6 @@
 {
   "workingDir": "./_tmp",
-  "outputDir": "./build",
+  "outputDir": "/github/workspace/build",
   "adapter": {
     "cache": {
       "name": "file",
