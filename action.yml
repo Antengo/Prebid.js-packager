@@ -1,0 +1,17 @@
+name: Prebid Packager
+author: Ryan P. Hansen
+description: Tool to package prebid.js files
+brand:
+  color: pink
+  icon: anchor
+inputs:
+  configPath:
+    default: ''
+    description: 'The path to the prebid packager configuration file'
+    required: false
+outputs:
+  files: 
+    description: 'The paths of the generated files'
+runs:
+  using: 'node12'
+  main: 'action.js'

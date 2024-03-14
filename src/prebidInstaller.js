@@ -10,6 +10,7 @@ let path        = require('path'),
     sanitizeFn  = require('sanitize-filename'),
     crypto      = require('crypto'),
     through2    = require('through2'),
+    lodash      = require('lodash'),
     fs          = require('fs');
 
 function install(versions, config, getAdapter) {
@@ -94,8 +95,11 @@ function install(versions, config, getAdapter) {
                                     .digest('hex')
                                     .substring(0, 7);
 
+                                pkg.dependencies = omit(pkg.dependencies, ['eslint-plugin-prebid'])
+                                pkg.devDependencies = omit(pkg.devDependencies, ['eslint-plugin-prebid'])
+
                                 // add the build commands to the script file for lerna to execute
-                                pkg.scripts.build = 'gulp webpack';
+                                pkg.scripts.build = 'gulp build';
 
                                 let strContents = JSON.stringify(pkg, null, 2);
 
