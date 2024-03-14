@@ -13,5 +13,7 @@ outputs:
   files: 
     description: 'The paths of the generated files'
 runs:
-  using: 'node12'
-  main: 'action.js'
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.configPath }}
