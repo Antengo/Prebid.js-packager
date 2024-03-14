@@ -9,10 +9,12 @@ function write(dir, manifestsObj) {
     return Promise.all(
         Object.keys(manifestsObj).map(filename => new Promise((resolve, reject) => {
             let manifest = manifestsObj[filename];
-
-            shell.mkdir('-p', dir);
-
             let filePath = path.join(dir, filename);
+
+            let parsed = path.parse(filePath)
+
+            shell.mkdir('-p', parsed.dir);
+
 
             if (path.extname(filename) === '.json') {
                 fs.writeFile(

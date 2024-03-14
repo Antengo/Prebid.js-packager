@@ -37,7 +37,7 @@ module.exports = function run(cwd, resources, configFile) {
                         let packageDir = path.join(config.outputDir, 'packages');
 
                         console.log("Cleaning package dir...");
-                        del.sync(packageDir);
+                        del.sync(packageDir, { force: true });
 
                         let manifests = generatePackageManifests(pkgConfig, results[0], results[1], packageDir);
                         return write(packageDir, manifests);
