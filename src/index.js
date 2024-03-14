@@ -36,7 +36,7 @@ module.exports = function run(cwd, resources, configFile) {
                     ]).then(results => {
                         let packageDir = path.join(config.outputDir, 'packages');
 
-                        console.log("Ceaning package dir...");
+                        console.log("Cleaning package dir...");
                         del.sync(packageDir);
 
                         let manifests = generatePackageManifests(pkgConfig, results[0], results[1], packageDir);

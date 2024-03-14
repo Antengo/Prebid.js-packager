@@ -95,8 +95,8 @@ function install(versions, config, getAdapter) {
                                     .digest('hex')
                                     .substring(0, 7);
 
-                                pkg.dependencies = omit(pkg.dependencies, ['eslint-plugin-prebid'])
-                                pkg.devDependencies = omit(pkg.devDependencies, ['eslint-plugin-prebid'])
+                                pkg.dependencies = lodash.omit(pkg.dependencies, ['eslint-plugin-prebid'])
+                                pkg.devDependencies = lodash.omit(pkg.devDependencies, ['eslint-plugin-prebid'])
 
                                 // add the build commands to the script file for lerna to execute
                                 pkg.scripts.build = 'gulp build';
