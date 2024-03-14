@@ -9,6 +9,10 @@ inputs:
     default: ''
     description: 'The path to the prebid packager configuration file'
     required: false
+  packagerPath:
+    default: ''
+    description: 'The path to the prebid packager configuration file'
+    required: false
 outputs:
   files: 
     description: 'The paths of the generated files'
@@ -16,4 +20,4 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.configPath }}
+    - ${{ inputs.configPath }} --config ${{ inputs.packagerPath }}

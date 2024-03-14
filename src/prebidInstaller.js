@@ -95,6 +95,10 @@ function install(versions, config, getAdapter) {
                                     .digest('hex')
                                     .substring(0, 7);
 
+                                if (config.globalVarName) {
+                                    console.log('Using', config.globalVarName, 'instead of', pkg.globalVarName)
+                                    pkg.globalVarName = config.globalVarName
+                                }
                                 pkg.dependencies = lodash.omit(pkg.dependencies, ['eslint-plugin-prebid'])
                                 pkg.devDependencies = lodash.omit(pkg.devDependencies, ['eslint-plugin-prebid'])
 
