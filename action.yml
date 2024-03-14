@@ -21,4 +21,5 @@ runs:
   image: 'Dockerfile'
   args:
     - ${{ inputs.configPath }}
-    - --config ${{ inputs.packagerPath }}
+    - --config
+    - ${{ inputs.packagerPath }}
