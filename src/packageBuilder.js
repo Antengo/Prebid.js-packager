@@ -44,7 +44,7 @@ function getDependenciesFile(depPath) {
     }
 }
 
-function generatePackageManifests(config, prebidManifest, codeManifest, relativeTo = '.') {
+function generatePackageManifests(config, prebidManifest, codeManifest, relativeTo = '.', globalVarName = 'pbjs') {
     return _.reduce(config, (manifests, config) => {
         config.packages.forEach(pkg => {
             let manifest = manifests[pkg.filename] = {
@@ -53,7 +53,7 @@ function generatePackageManifests(config, prebidManifest, codeManifest, relative
                     prebidManifest[pkg.version || config.version].modules,
                     modulePath => path.relative(relativeTo, modulePath)
                 ),
-                postfix: "pbjs.processQueue();"
+                postfix: (globalVarName || "pbjs") + ".processQueue();"
             };
 
             if (pkg.code) {

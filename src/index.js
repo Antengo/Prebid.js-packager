@@ -39,7 +39,7 @@ module.exports = function run(cwd, resources, configFile) {
                         console.log("Cleaning package dir...");
                         del.sync(packageDir, { force: true });
 
-                        let manifests = generatePackageManifests(pkgConfig, results[0], results[1], packageDir);
+                        let manifests = generatePackageManifests(pkgConfig, results[0], results[1], packageDir, config.globalVarName);
                         return write(packageDir, manifests);
                     });
                 })
