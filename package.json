@@ -1,6 +1,6 @@
 {
   "name": "prebid-packager",
-  "version": "0.2.11",
+  "version": "0.2.12",
   "description": "A packaging implementation for enterprise Prebid.js setups",
   "main": "index.js",
   "scripts": {

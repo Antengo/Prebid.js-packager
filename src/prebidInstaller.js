@@ -183,7 +183,7 @@ function install(versions, config, getAdapter) {
         .then((prebids) => {
             return prebids.reduce((memo, result) => {
                 memo[result.version] = result
-                return result
+                return memo
             }, cachedManifests)
         })
     );
