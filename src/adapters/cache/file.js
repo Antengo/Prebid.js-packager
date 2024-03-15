@@ -17,26 +17,11 @@ module.exports = function(version) {
             throw 'not found in any cache';
         }
 
-        fs.readdir(path.join(cacheDir[0], sanitized), (err, files) => {
-            if (err) {
-                reject(err);
-            } else {
-                resolve([cacheDir[0], files]);
-            }
-        });
-    }).then(([cacheDir, files]) => {
-        return files.reduce((memo, file) => {
-            let name = path.basename(file, '.js');
-            if (name === 'prebid-core') {
-                memo[version].main = path.resolve(cacheDir, sanitized, file);
-            } else {
-                memo[version].modules[name] = path.resolve(cacheDir, sanitized, file);
-            }
-            return memo;
-        }, {
-            [version]: {modules: {}}
-        })
-    }).catch(err => {
+        const installPath = path.join(cacheDir[0], sanitized)
+        const buildDir = path.join(installPath, 'build/dist')
+        resolve({ [version]: { installPath, sanitizedVersion: sanitized, version, buildDir } })
+    })
+    .catch(err => {
         console.log(`Cache miss for version ${version}`);
         return null;
     });

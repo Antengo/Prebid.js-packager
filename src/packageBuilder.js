@@ -2,6 +2,7 @@
 let _       = require('lodash'),
     fs      = require('fs'),
     shell   = require('shelljs'),
+    exec    = require('child_process').exec,
     path    = require('path');
 
 
@@ -23,7 +24,7 @@ function write(dir, manifestsObj) {
                     err => err ? reject(err) : resolve(filePath)
                 );
             } else if (path.extname(filename) === '.js') {
-                buildFromManifest(dir, manifest).then(build => {
+                buildFromManifest(dir, manifest, filename).then(build => {
                    fs.writeFile(
                        filePath,
                        build,
@@ -48,12 +49,9 @@ function generatePackageManifests(config, prebidManifest, codeManifest, relative
     return _.reduce(config, (manifests, config) => {
         config.packages.forEach(pkg => {
             let manifest = manifests[pkg.filename] = {
-                main: path.relative(relativeTo, prebidManifest[pkg.version || config.version].main),
-                modules: _.mapValues(
-                    prebidManifest[pkg.version || config.version].modules,
-                    modulePath => path.relative(relativeTo, modulePath)
-                ),
-                postfix: (globalVarName || "pbjs") + ".processQueue();"
+                installPath: prebidManifest[pkg.version || config.version].installPath,
+                buildDir: prebidManifest[pkg.version || config.version].buildDir,
+                modules: []
             };
 
             if (pkg.code) {
@@ -66,76 +64,27 @@ function generatePackageManifests(config, prebidManifest, codeManifest, relative
             }
 
             if (Array.isArray(pkg.modules)) {
-                const depFile = manifest.modules['dependencies.json'] || '';
-                const dependencies = getDependenciesFile(path.join(relativeTo, depFile));
-                if (dependencies) {
-                    const librariesToAdd = new Set();
-                    pkg.modules.forEach(mod => {
-                        if (Array.isArray(dependencies[`${mod}.js`])) {
-                            dependencies[`${mod}.js`].forEach(lib => librariesToAdd.add(lib));
-                        }
-                    });
-                    if (librariesToAdd.size) {
-                        pkg.modules.push(...librariesToAdd);
-                    }
-                }
-                manifest.moduleList = pkg.modules;
-                manifest.modules = _.filter(manifest.modules, (modulePath, module) => pkg.modules.includes(module));
+                manifest.modules = pkg.modules
             }
         });
         return manifests;
     }, {});
 }
 
-function buildFromManifest(cwd, manifest, modules, codes) {
+function buildFromManifest(cwd, manifest, filename) {
     cwd = path.resolve(cwd);
 
-    return Promise.all([
-        Promise.all(_.map(manifest.code, (codePath, code) => new Promise((resolve, reject) => {
-            function readFile() {
-                fs.readFile(
-                    path.join(cwd, codePath),
-                    (err, data) => err ? reject(err) : resolve(data)
-                );
-            }
+    return new Promise((resolve, reject) => {
+        exec(
+            `npm run bundle -- --modules=${manifest.modules.join(',')} --bundleName=${filename}`,
+            {cwd: manifest.installPath},
+            (err, stdout) => {
+                if (err) return reject(err)
 
-            if (Array.isArray(manifest.code)) {
-                readFile();
-            } else if (Array.isArray(codes) && codes.includes(code)) {
-                readFile();
-            } else {
-                resolve('');
+                fs.readFile(path.resolve(manifest.buildDir, filename), (err, data) => err ? reject(err) : resolve(data))
             }
-        }))).then(results => results.filter(result => result).join('\n')),
-        new Promise((resolve, reject) => {
-            fs.readFile(
-                path.join(cwd, manifest.main),
-                (err, data) => err ? reject(err) : resolve(data)
-            );
-        }),
-        Promise.all(_.map(manifest.modules, (modulePath, module) => new Promise((resolve, reject) => {
-            function readFile() {
-                fs.readFile(
-                    path.join(cwd, modulePath),
-                    (err, data) => err ? reject(err) : resolve(data)
-                );
-            }
-
-            if (Array.isArray(manifest.modules)) {
-                readFile();
-            } else if (Array.isArray(modules) && modules.includes(module)) {
-                readFile();
-            } else {
-                resolve('');
-            }
-        }))).then(results => results.filter(result => result).join('\n'))
-    ]).then(results => {
-        results.push(manifest.postfix);
-        manifest.moduleList = manifest.moduleList || [];
-        return results.join('\n').replace(/installedModules(\s||'')=(\s||'')\[\]/i, `installedModules=${JSON.stringify(manifest.moduleList)}`);
-    }).catch(err => {
-       setTimeout(() => { throw err });
-    });
+        );
+    })
 }
 
 module.exports = {

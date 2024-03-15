@@ -19,8 +19,6 @@ function install(versions, config, getAdapter) {
 
     let cacheAdapter = getAdapter('cache');
 
-    clean();
-
     let cachedManifests = {};
 
     return (
@@ -104,6 +102,7 @@ function install(versions, config, getAdapter) {
 
                                 // add the build commands to the script file for lerna to execute
                                 pkg.scripts.build = 'gulp build';
+                                pkg.scripts.bundle = 'gulp bundle';
 
                                 let strContents = JSON.stringify(pkg, null, 2);
 
@@ -181,32 +180,12 @@ function install(versions, config, getAdapter) {
                 resolve(prebid);
             });
         }))))
-
-
-        // reformat manifest according to spec
-        .then(results => results.reduce((memo, result) => {
-            let manifest = {};
-
-            let outputDirForVersion = path.join(outputDir, result.sanitizedVersion);
-
-            manifest.modules = result.buildFiles.map(file => path.basename(file, '.js'))
-                .filter((module) => {
-                    if (module === 'prebid-core') {
-                        manifest.main = path.join(outputDirForVersion, 'prebid-core.js');
-                        return false;
-                    }
-                    return true;
-                })
-                .reduce((modules, module) => {
-                    modules[module] = path.join(outputDirForVersion, module + '.js');
-                    return modules;
-                }, {});
-
-            memo[result.version] = manifest;
-            return memo;
-        }, cachedManifests))
-
-        .finally(clean)
+        .then((prebids) => {
+            return prebids.reduce((memo, result) => {
+                memo[result.version] = result
+                return result
+            }, cachedManifests)
+        })
     );
 
     function sanitize(name) {

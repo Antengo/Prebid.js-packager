@@ -5,7 +5,7 @@
     "cache": {
       "name": "file",
       "options": {
-        "cacheDirs": ["./buildCache", "./build/prebid"]
+        "cacheDirs": ["./_tmp/prebid/packages"]
       }
     },
     "config": {
