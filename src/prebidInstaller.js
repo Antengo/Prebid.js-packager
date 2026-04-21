@@ -129,6 +129,25 @@ function install(versions, config, getAdapter) {
             })
         }))))
 
+        // patch ESM/CJS interop issues in newer Prebid versions
+        .then(prebids => {
+            prebids.forEach(prebid => {
+                let buildOptsFile = path.join(prebid.installPath, 'customize', 'buildOptions.mjs');
+                if (fs.existsSync(buildOptsFile)) {
+                    let content = fs.readFileSync(buildOptsFile, 'utf8');
+                    if (content.includes("import { validate } from 'schema-utils'")) {
+                        content = content.replace(
+                            "import { validate } from 'schema-utils'",
+                            "import pkg from 'schema-utils';\nconst { validate } = pkg"
+                        );
+                        fs.writeFileSync(buildOptsFile, content);
+                        console.log(`Patched ${buildOptsFile} for CJS/ESM interop`);
+                    }
+                }
+            });
+            return prebids;
+        })
+
         // install version dependencies and run build
         .then(files => {
             let versions = files.map(file => file.version);
