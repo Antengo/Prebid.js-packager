@@ -84,31 +84,38 @@ function install(versions, config, getAdapter) {
                     // rename packages in package.json to prevent tooling errors
                     mapStream: function(fileStream, header) {
                         if (header.name === './package.json') {
-                            return fileStream.pipe(through2(function(chunk, enc, cb) {
-                                let pkg = JSON.parse(chunk.toString());
+                            let chunks = [];
+                            return fileStream.pipe(through2(
+                                function(chunk, enc, cb) {
+                                    chunks.push(chunk);
+                                    cb();
+                                },
+                                function(cb) {
+                                    let pkg = JSON.parse(Buffer.concat(chunks).toString());
 
-                                // make the names unique to help lerna operate correctly
-                                pkg.name = crypto.createHash("md5")
-                                    .update(prebid.npmVersion)
-                                    .digest('hex')
-                                    .substring(0, 7);
+                                    // make the names unique to help lerna operate correctly
+                                    pkg.name = crypto.createHash("md5")
+                                        .update(prebid.npmVersion)
+                                        .digest('hex')
+                                        .substring(0, 7);
 
-                                if (config.globalVarName) {
-                                    console.log('Using', config.globalVarName, 'instead of', pkg.globalVarName)
-                                    pkg.globalVarName = config.globalVarName
+                                    if (config.globalVarName) {
+                                        console.log('Using', config.globalVarName, 'instead of', pkg.globalVarName)
+                                        pkg.globalVarName = config.globalVarName
+                                    }
+                                    pkg.dependencies = lodash.omit(pkg.dependencies, ['eslint-plugin-prebid'])
+                                    pkg.devDependencies = lodash.omit(pkg.devDependencies, ['eslint-plugin-prebid'])
+
+                                    // add the build commands to the script file for lerna to execute
+                                    pkg.scripts.build = 'gulp build';
+                                    pkg.scripts.bundle = 'gulp bundle';
+
+                                    let strContents = JSON.stringify(pkg, null, 2);
+
+                                    this.push(Buffer.from(strContents));
+                                    cb();
                                 }
-                                pkg.dependencies = lodash.omit(pkg.dependencies, ['eslint-plugin-prebid'])
-                                pkg.devDependencies = lodash.omit(pkg.devDependencies, ['eslint-plugin-prebid'])
-
-                                // add the build commands to the script file for lerna to execute
-                                pkg.scripts.build = 'gulp build';
-                                pkg.scripts.bundle = 'gulp bundle';
-
-                                let strContents = JSON.stringify(pkg, null, 2);
-
-                                this.push(new Buffer(strContents));
-                                cb();
-                            }));
+                            ));
                         }
                         return fileStream;
                     }
