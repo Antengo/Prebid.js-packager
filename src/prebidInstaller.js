@@ -106,6 +106,14 @@ function install(versions, config, getAdapter) {
                                     pkg.dependencies = lodash.omit(pkg.dependencies, ['eslint-plugin-prebid'])
                                     pkg.devDependencies = lodash.omit(pkg.devDependencies, ['eslint-plugin-prebid'])
 
+                                    // webpack 5.108+ no longer depends on terser-webpack-plugin, but Prebid's
+                                    // webpack.conf.js still requires it. Ensure lerna hoist installs it.
+                                    pkg.devDependencies = pkg.devDependencies || {}
+                                    if (!pkg.devDependencies['terser-webpack-plugin'] &&
+                                        !(pkg.dependencies && pkg.dependencies['terser-webpack-plugin'])) {
+                                        pkg.devDependencies['terser-webpack-plugin'] = '^5.3.11'
+                                    }
+
                                     // add the build commands to the script file for lerna to execute
                                     pkg.scripts.build = 'gulp build';
                                     pkg.scripts.bundle = 'gulp bundle';
